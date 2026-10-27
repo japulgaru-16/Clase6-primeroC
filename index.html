@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clase 6 · Explorando con GeoGebra</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --cream:#FAF6EE; --navy:#16305A; --navy-soft:#E9EFF8;
+  --orange:#F97316; --orange-deep:#C2570A; --orange-soft:#FFF1E4;
+  --ink:#26334D; --muted:#6E7C95; --line:#E4E1D5; --card-line:#E2E6EF;
+  --green:#16A34A; --green-soft:#EAF7EF; --red:#DC2626; --red-soft:#FDECEC;
+  --amber-soft:#FFF4DE; --amber-line:#EFC26B; --amber-ink:#7A5A17;
+  --shadow:0 10px 28px rgba(22,48,90,.10);
+}
+html,body{height:100%}
+body{font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;background:radial-gradient(1200px 800px at 30% 12%, #1B2E5A 0%, #0C1730 62%);overflow:hidden}
+
+#progress{position:fixed;top:0;left:0;height:4px;width:0%;background:var(--orange);z-index:99;transition:width .45s ease;border-radius:0 3px 3px 0}
+
+#frame{position:fixed;inset:0;overflow:auto;display:flex;z-index:1}
+#wrap{margin:auto;flex:none;position:relative;width:1280px;height:720px}
+#stage{position:absolute;top:0;left:0;width:1280px;height:720px;transform-origin:0 0;background:var(--cream);border-radius:16px;overflow:hidden;box-shadow:0 34px 90px rgba(0,0,0,.5);user-select:none;background-image:linear-gradient(rgba(22,48,90,.045) 1px, transparent 1px),linear-gradient(90deg, rgba(22,48,90,.045) 1px, transparent 1px);background-size:40px 40px}
+
+/* ---- diapositivas ---- */
+.slide{position:absolute;inset:0;padding:46px 72px 78px;display:flex;flex-direction:column;opacity:0;visibility:hidden;transform:translateX(46px);transition:opacity .5s ease, transform .5s ease, visibility 0s linear .5s}
+.slide.active{opacity:1;visibility:visible;transform:none;transition:opacity .5s ease, transform .5s ease;z-index:2}
+.slide.before{transform:translateX(-46px)}
+
+.s-head{display:flex;align-items:center;gap:16px}
+.s-title{font-size:44px;font-weight:800;color:var(--navy);letter-spacing:-.6px;line-height:1.1}
+.chip{display:inline-flex;align-items:center;gap:8px;flex:none;background:var(--orange);color:#fff;font-size:14px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;padding:9px 17px;border-radius:999px}
+.chip.navy{background:var(--navy)}
+.chip.soft{background:var(--orange-soft);color:var(--orange-deep);border:1.5px solid #F6C79E}
+.chip.ghost{background:#fff;color:var(--navy);border:1.5px solid #C9D6EC}
+.push{margin-left:auto}
+
+.s-foot{position:absolute;left:72px;right:72px;bottom:18px;display:flex;justify-content:space-between;align-items:center;gap:18px;font-size:14.5px;color:var(--muted);border-top:1.5px solid var(--line);padding-top:11px}
+.s-foot .r{display:flex;align-items:center;gap:18px;font-weight:600}
+.hint{display:inline-flex;align-items:center;color:var(--orange-deep);font-weight:700}
+.hintdot{width:8px;height:8px;border-radius:50%;background:var(--orange);display:inline-block;margin-right:8px;animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+
+.card{background:#fff;border:1.5px solid var(--card-line);border-radius:16px;box-shadow:var(--shadow)}
+
+/* matemáticas */
+.math{font-family:Georgia,"Times New Roman",serif}
+.math var{font-style:italic;padding:0 2px}
+
+/* revelado paso a paso */
+.reveal{opacity:0;transform:translateY(16px) scale(.985);transition:opacity .5s ease, transform .5s cubic-bezier(.2,.7,.3,1)}
+.reveal.shown{opacity:1;transform:none}
+
+/* ---- portada ---- */
+.cover{align-items:center;justify-content:center;text-align:center}
+.chiprow{display:flex;gap:12px;margin-bottom:28px}
+.cover h1{font-size:52px;line-height:1.12;letter-spacing:-1.2px;color:var(--navy);font-weight:800}
+.cover .sub{margin-top:14px;font-size:27px;font-weight:700;color:var(--orange)}
+.cred{margin-top:40px;padding:22px 34px;border-radius:20px}
+.cred-grid{display:grid;grid-template-columns:repeat(2,340px);gap:16px 44px}
+.cred-item{display:flex;align-items:center;gap:13px;text-align:left}
+.cred-item .ic{flex:none;width:42px;height:42px;border-radius:12px;background:var(--navy-soft);color:var(--navy);display:flex;align-items:center;justify-content:center}
+.lbl{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.11em;color:var(--muted)}
+.val{font-size:18.5px;font-weight:800;color:var(--navy);line-height:1.3}
+.pair{position:absolute;font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:29px;color:var(--navy);opacity:.12;pointer-events:none}
+
+/* ---- objetivo ---- */
+.oa{display:flex;overflow:hidden;margin-top:20px}
+.oa-bar{flex:none;width:9px;background:var(--orange)}
+.oa-in{padding:24px 34px}
+.oa-k{font-size:15px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--orange-deep);margin-bottom:9px}
+.oa-t{font-size:27px;line-height:1.62;color:var(--navy);font-weight:600}
+.oa-t b{color:var(--orange-deep)}
+.minis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:22px}
+.mini{padding:18px}
+.mic{width:44px;height:44px;border-radius:11px;background:var(--orange-soft);color:var(--orange);display:flex;align-items:center;justify-content:center;margin-bottom:11px}
+.mt{font-size:20px;font-weight:800;color:var(--navy)}
+.md{font-size:16.5px;color:var(--muted);line-height:1.5;margin-top:4px}
+
+/* ---- tareas / avisos ---- */
+.task{display:flex;gap:16px;align-items:flex-start;padding:16px 22px;margin-top:14px}
+.badge{flex:none;width:44px;height:44px;border-radius:12px;background:var(--navy);color:#fff;font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.t-body{font-size:21px;color:var(--ink);line-height:1.5}
+.t-body b{color:var(--navy)}
+
+/* ---- pregunta destacada ---- */
+.qbox{display:flex;gap:15px;align-items:flex-start;margin-top:16px;background:var(--orange-soft);border:2.5px solid var(--orange);border-radius:16px;padding:17px 24px}
+.qbox .qic{flex:none;color:var(--orange);margin-top:3px}
+.qbox .q{font-size:25px;font-weight:800;color:var(--navy);line-height:1.5}
+.qbox em{font-style:normal;color:var(--orange-deep);text-decoration:underline 3px rgba(249,115,22,.35);text-underline-offset:5px}
+.qbox.big{max-width:960px;padding:28px 36px}
+.qbox.big .q{font-size:28px;line-height:1.55}
+.think-sub{margin-top:16px;text-align:center;font-size:18px;color:var(--muted);font-weight:600}
+
+/* ---- bloque instruccional navy ---- */
+.inst{display:flex;align-items:center;gap:14px;background:var(--navy);border-radius:16px;padding:14px 22px;color:#E8EEFA;font-size:20.5px;line-height:1.5}
+.inst svg{flex:none;color:#FFB067}
+.inst b{color:#FFC581}
+
+/* ---- layout 2 columnas ---- */
+.cols{display:flex;gap:16px;align-items:flex-start;margin-top:16px;flex:1}
+.col{display:flex;flex-direction:column;gap:14px}
+.col .task{margin-top:0}
+.col .qbox{margin-top:0}
+
+/* ---- plano cartesiano SVG ---- */
+.plane-card{padding:12px 14px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.plane-head{display:flex;align-items:center;gap:10px}
+.grid-l{stroke:rgba(22,48,90,.09);stroke-width:1;fill:none}
+.axis{stroke:#16305A;stroke-width:2.4;stroke-linecap:round;fill:none}
+.tick{fill:#6E7C95;font-size:12px;font-family:Georgia,serif}
+.axname{fill:#16305A;font-size:16px;font-style:italic;font-family:Georgia,serif;font-weight:700}
+.inter-card{padding:15px 18px}
+.inter-k{font-size:13.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--orange-deep);margin-bottom:7px;display:flex;align-items:center;gap:8px}
+.chiprow2{display:flex;justify-content:center;gap:12px;margin-top:16px}
+
+/* ---- Clase 6: fracción destacada ---- */
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1;margin:0 4px}
+.frac .num{padding:0 12px 7px;border-bottom:3px solid currentColor}
+.frac .den{padding:7px 12px 0}
+.fv{font-family:Georgia,serif;font-style:italic;color:var(--orange-deep);font-weight:700}
+.frm{display:flex;align-items:center;gap:10px;color:var(--navy);font-family:Georgia,serif}
+
+/* ---- Clase 6: chip de comando ---- */
+.kbd{display:inline-block;background:var(--navy-soft);border:1.5px solid #C9D6EC;border-radius:8px;padding:2px 10px;font-family:Consolas,"Courier New",monospace;font-size:18px;color:var(--navy);font-weight:700;white-space:nowrap}
+
+/* ---- Clase 6: panel GeoGebra simulado ---- */
+.ggb-card{padding:12px 14px;display:flex;flex-direction:column;gap:8px;align-items:center}
+.ggb-head{display:flex;align-items:center;gap:10px;width:100%}
+.ggb-eq{font-family:Georgia,serif;font-size:20px;color:var(--navy);font-weight:700;background:var(--navy-soft);border-radius:10px;padding:6px 14px;text-align:center;width:100%}
+.ggb-eq var{color:var(--orange-deep)}
+.sl-row{display:flex;align-items:center;gap:10px;width:100%}
+.sl-lab{flex:none;width:22px;text-align:center;font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:22px;color:var(--orange-deep)}
+.sl-row input[type=range]{flex:1;accent-color:var(--orange);height:20px;cursor:pointer}
+.sl-val{flex:none;width:62px;text-align:center;background:var(--navy-soft);color:var(--navy);font-weight:800;font-size:16px;border-radius:8px;padding:3px 0;font-family:Georgia,serif}
+.ggb-out{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;border:1.5px solid var(--card-line);border-radius:12px;padding:8px 14px;font-size:18px;color:var(--ink);font-weight:600;background:#fff}
+.ggb-out b{color:var(--navy);font-family:Georgia,serif}
+.ggb-out .val-m{font-family:Georgia,serif;font-weight:700;color:var(--orange-deep)}
+
+/* ---- Clase 6: plano demostrativo (lámina 5) ---- */
+.pchip{border:2px solid #C9D6EC;background:#fff;color:var(--navy);font-weight:700;font-size:15px;border-radius:999px;padding:6px 14px;cursor:pointer;font-family:Georgia,serif;transition:all .18s}
+.pchip:hover{border-color:var(--orange);color:var(--orange-deep);transform:translateY(-1px)}
+.pchip.on{background:var(--orange);border-color:var(--orange);color:#fff}
+.demo-line{stroke:#F97316;stroke-width:3.5;stroke-linecap:round}
+.demo-dot{fill:#16305A;opacity:.5}
+.tri{fill:rgba(22,165,74,.10);stroke:#16A34A;stroke-width:2;stroke-dasharray:5 4}
+.ra{fill:none;stroke:#16A34A;stroke-width:1.6;opacity:.85}
+.tri-lab{fill:#15803D;font-size:14.5px;font-weight:700;font-family:Georgia,serif}
+.demo-out{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;border:1.5px solid var(--card-line);border-radius:12px;padding:8px 14px;font-size:18px;color:var(--ink);font-weight:600;background:#fff}
+.demo-out b{color:var(--navy);font-family:Georgia,serif}
+.demo-out .val-m{font-family:Georgia,serif;font-weight:700;color:var(--orange-deep)}
+.inf{display:flex;flex-direction:column;gap:9px}
+.inf-row{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid var(--card-line);border-radius:12px;padding:9px 14px;font-size:17.5px;color:var(--ink);line-height:1.45}
+.inf-row b{color:var(--orange-deep);font-family:Georgia,serif;font-style:italic}
+.inf-row .arr{flex:none;color:var(--orange);font-weight:800}
+
+/* ---- Clase 6: tarjetas del signo (lámina 6) ---- */
+.sign-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}
+.sgn{padding:15px 17px;display:flex;flex-direction:column;gap:8px}
+.sgn .schip{align-self:flex-start;background:var(--navy-soft);color:var(--navy);font-weight:800;font-size:15px;border-radius:999px;padding:5px 12px;font-family:Georgia,serif}
+.sgn .srow{display:flex;align-items:center;gap:10px}
+.sgn .sm{font-size:25px;font-weight:800;font-family:Georgia,serif}
+.sgn .sm.neg{color:var(--navy)}
+.sgn .sm.pos{color:#15803D}
+.sgn p{font-size:16px;color:var(--ink);line-height:1.5}
+.sgn .sex{margin-top:auto;font-size:14px;color:var(--muted);font-family:Georgia,serif;border-top:1.5px dashed var(--line);padding-top:7px}
+
+/* ---- navegación ---- */
+#hud{position:fixed;right:20px;bottom:16px;display:flex;align-items:center;gap:10px;z-index:99}
+#hud .cnt{color:rgba(255,255,255,.92);font-size:14px;font-weight:700;letter-spacing:.05em;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);padding:9px 16px;border-radius:999px}
+#hud button{width:42px;height:42px;border-radius:50%;border:1.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center}
+#hud button:hover{background:var(--orange);border-color:var(--orange);transform:translateY(-1px)}
+#hud button.on{background:var(--orange);border-color:var(--orange)}
+
+/* ---- v3: línea de respuesta ---- */
+.blank{display:inline-block;width:110px;border-bottom:2.5px solid var(--navy);height:1.1em;vertical-align:baseline;margin-left:8px}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<div id="frame">
+<div id="wrap">
+<div id="stage">
+<!-- ============ DIAPOSITIVA 1 · PORTADA ============ -->
+<section class="slide cover">
+  <div class="pair" style="top:104px;left:96px;transform:rotate(-7deg)">m = −a/b</div>
+  <div class="pair" style="top:92px;right:110px;transform:rotate(6deg)">Pendiente</div>
+  <div class="pair" style="top:338px;left:64px;transform:rotate(5deg)">a · b · c</div>
+  <div class="pair" style="top:344px;right:70px;transform:rotate(-6deg)">ax + by = c</div>
+  <div class="pair" style="bottom:146px;left:140px;transform:rotate(4deg)">(0, 4)</div>
+  <div class="pair" style="bottom:148px;right:136px;transform:rotate(-5deg)">Δx, Δy</div>
+
+  <div class="chiprow">
+    <span class="chip">Clase 6</span>
+    <span class="chip navy">Unidad 2 · Matemática · I° Medio</span>
+  </div>
+  <h1>Explorando con GeoGebra</h1>
+  <p class="sub">El efecto de los parámetros &ldquo;a&rdquo; y &ldquo;b&rdquo;</p>
+
+  <div class="cred card">
+    <div class="cred-grid">
+      <div class="cred-item">
+        <span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>
+        <span><span class="lbl">Profesor en práctica</span><br><span class="val">Javier Pulgar</span></span>
+      </div>
+      <div class="cred-item">
+        <span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg></span>
+        <span><span class="lbl">Profesor guía</span><br><span class="val">Felipe Espinoza</span></span>
+      </div>
+      <div class="cred-item">
+        <span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg></span>
+        <span><span class="lbl">Universidad</span><br><span class="val">Universidad Alberto Hurtado</span></span>
+      </div>
+      <div class="cred-item">
+        <span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/></svg></span>
+        <span><span class="lbl">Liceo</span><br><span class="val">Liceo Comercial Luis Correa Prieto</span></span>
+      </div>
+    </div>
+  </div>
+
+  <footer class="s-foot">
+    <span>Unidad 2 · Matemática · I° Medio</span>
+    <span class="r"><span>Ecuaciones lineales de dos incógnitas</span></span>
+  </footer>
+</section>
+
+<!-- ============ DIAPOSITIVA 2 · OBJETIVO ============ -->
+<section class="slide">
+  <header class="s-head">
+    <span class="chip">Clase 6</span>
+    <h2 class="s-title">Objetivo de la Clase</h2>
+  </header>
+
+  <div class="oa card">
+    <div class="oa-bar"></div>
+    <div class="oa-in">
+      <div class="oa-k">Objetivo de aprendizaje</div>
+      <p class="oa-t">&ldquo;<b>Deducir</b> el efecto de los parámetros &lsquo;a&rsquo; y &lsquo;b&rsquo; sobre la <b>pendiente y posición</b> de las rectas <span class="math"><var>a</var><var>x</var> + <var>b</var><var>y</var> = <var>c</var></span> mediante la <b>exploración con deslizadores</b> en Geogebra y la <b>formulación de conjeturas</b>.&rdquo;</p>
+    </div>
+  </div>
+
+  <div class="minis">
+    <div class="mini card">
+      <div class="mic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2.6"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2.6"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="7" cy="18" r="2.6"/></svg></div>
+      <div class="mt">Deslizadores</div>
+      <div class="md">Movemos <span class="math"><var>a</var></span>, <span class="math"><var>b</var></span> y <span class="math"><var>c</var></span> y observamos qué cambia.</div>
+    </div>
+    <div class="mini card">
+      <div class="mic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21 21 3"/><circle cx="7" cy="17" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="17" cy="7" r="1.6"/></svg></div>
+      <div class="mt">La recta ec1</div>
+      <div class="md">Graficamos <span class="math"><var>a</var><var>x</var> + <var>b</var><var>y</var> = <var>c</var></span> en la Vista Gráfica.</div>
+    </div>
+    <div class="mini card">
+      <div class="mic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg></div>
+      <div class="mt">Pendiente(ec1)</div>
+      <div class="md">El comando calcula la pendiente <span class="math"><var>m</var></span> por nosotros.</div>
+    </div>
+    <div class="mini card">
+      <div class="mic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.4 1 2.3h6c0-.9.4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg></div>
+      <div class="mt">Conjeturas</div>
+      <div class="md">Primero predecimos, después comprobamos y deducimos.</div>
+    </div>
+  </div>
+
+  <footer class="s-foot">
+    <span>Unidad 2 · Matemática · I° Medio</span>
+    <span class="r"><span>Ecuaciones lineales de dos incógnitas</span></span>
+  </footer>
+</section>
+<!-- ============ DIAPOSITIVA 3 · PREDICCIÓN INDIVIDUAL ============ -->
+<section class="slide">
+  <header class="s-head">
+    <span class="chip">Clase 6</span>
+    <h2 class="s-title">Predicción Individual</h2>
+    <span class="chip ghost push"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>Antes de abrir GeoGebra</span>
+  </header>
+
+  <div style="display:flex;gap:24px;flex:1;margin-top:20px;align-items:stretch;min-height:0">
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+      <div class="qbox big" style="margin-top:0">
+        <span class="qic"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+        <p class="q">En la ecuación <em><span class="math"><var>a</var><var>x</var> + <var>b</var><var>y</var> = <var>c</var></span></em>, ¿qué crees que pasará con la <em>gráfica de la recta</em> cuando <em><span class="math"><var>a</var> = 0</span></em>? ¿Y cuando <em><span class="math"><var>b</var> = 0</span></em>?</p>
+      </div>
+
+      <div class="chiprow2" style="justify-content:flex-start;margin-top:16px">
+        <span class="chip ghost"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>Caso 1 · ¿<span class="math"><var>a</var> = 0</span>?</span>
+        <span class="chip ghost"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>Caso 2 · ¿<span class="math"><var>b</var> = 0</span>?</span>
+      </div>
+
+      <div style="margin-top:auto">
+        <div class="task card" style="margin-top:14px">
+          <div class="badge">1</div>
+          <div class="t-body">Haz un <b>bosquejo en tu cuaderno</b>, a mano alzada: dibuja <b>las dos rectas</b> que imaginas, con un <b>color distinto</b> para cada caso.</div>
+        </div>
+        <div class="task card">
+          <div class="badge">2</div>
+          <div class="t-body">Nadie va a comprobar todavía: <b>primero predice</b>. La respuesta la descubrirás explorando con los deslizadores.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:426px;flex:none;display:flex">
+      <div class="plane-card card noclick" style="flex:1;justify-content:center">
+        <div class="plane-head">
+          <span class="chip navy" style="padding:5px 12px;font-size:12.5px">Referencia</span>
+          <span style="font-size:14px;color:var(--muted);font-weight:700">Dibuja un plano como este en tu cuaderno</span>
+        </div>
+        <svg viewBox="0 0 440 440" width="390" height="390" role="img" aria-label="Plano cartesiano vacío, de referencia para el bosquejo en el cuaderno">
+          <path class="grid-l" d="M30 12V432M68 12V432M106 12V432M144 12V432M182 12V432M258 12V432M296 12V432M334 12V432M372 12V432M410 12V432M12 412H428M12 374H428M12 336H428M12 298H428M12 260H428M12 184H428M12 146H428M12 108H428M12 70H428M12 32H428"/>
+          <line class="axis" x1="6" y1="222" x2="434" y2="222"/>
+          <path class="axis" d="M426 217l9 5-9 5"/>
+          <line class="axis" x1="220" y1="436" x2="220" y2="6"/>
+          <path class="axis" d="M215 14l5-9 5 9"/>
+          <text class="axname" x="430" y="242">x</text>
+          <text class="axname" x="233" y="14">y</text>
+          <text class="tick" x="208" y="240" text-anchor="end">0</text>
+          <text class="tick" x="30" y="240" text-anchor="middle">−5</text>
+          <text class="tick" x="68" y="240" text-anchor="middle">−4</text>
+          <text class="tick" x="106" y="240" text-anchor="middle">−3</text>
+          <text class="tick" x="144" y="240" text-anchor="middle">−2</text>
+          <text class="tick" x="182" y="240" text-anchor="middle">−1</text>
+          <text class="tick" x="258" y="240" text-anchor="middle">1</text>
+          <text class="tick" x="296" y="240" text-anchor="middle">2</text>
+          <text class="tick" x="334" y="240" text-anchor="middle">3</text>
+          <text class="tick" x="372" y="240" text-anchor="middle">4</text>
+          <text class="tick" x="410" y="240" text-anchor="middle">5</text>
+          <text class="tick" x="208" y="416" text-anchor="end">−5</text>
+          <text class="tick" x="208" y="378" text-anchor="end">−4</text>
+          <text class="tick" x="208" y="340" text-anchor="end">−3</text>
+          <text class="tick" x="208" y="302" text-anchor="end">−2</text>
+          <text class="tick" x="208" y="264" text-anchor="end">−1</text>
+          <text class="tick" x="208" y="188" text-anchor="end">1</text>
+          <text class="tick" x="208" y="150" text-anchor="end">2</text>
+          <text class="tick" x="208" y="112" text-anchor="end">3</text>
+          <text class="tick" x="208" y="74" text-anchor="end">4</text>
+          <text class="tick" x="208" y="36" text-anchor="end">5</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <footer class="s-foot">
+    <span>Unidad 2 · Matemática · I° Medio</span>
+    <span class="r"><span>Ecuaciones lineales de dos incógnitas</span></span>
+  </footer>
+</section>
+
+<!-- ============ DIAPOSITIVA 4 · CONFIGURACIÓN DE GEOGEBRA ============ -->
+<section class="slide">
+  <header class="s-head">
+    <span class="chip">Clase 6</span>
+    <h2 class="s-title">Configuración de GeoGebra</h2>
+    <span class="chip ghost push"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 22h8"/><path d="M12 18v4"/></svg>En el computador</span>
+  </header>
+
+  <div class="cols">
+    <div class="col" style="flex:1">
+      <div class="task card">
+        <div class="badge">1</div>
+        <div class="t-body">Crea <b>tres deslizadores</b>: <b><span class="math"><var>a</var></span></b>, <b><span class="math"><var>b</var></span></b> y <b><span class="math"><var>c</var></span></b> (de −10 a 10).</div>
+      </div>
+      <div class="task card">
+        <div class="badge">2</div>
+        <div class="t-body">En la barra de entrada escribe la ecuación y presiona Enter: <span class="kbd">a x + b y = c</span> &nbsp;→&nbsp; se crea la recta <b>ec1</b>.</div>
+      </div>
+      <div class="task card">
+        <div class="badge">3</div>
+        <div class="t-body">Escribe el comando <span class="kbd">Pendiente(ec1)</span> &nbsp;→&nbsp; GeoGebra mostrará el valor de la pendiente <span class="math"><var>m</var></span>.</div>
+      </div>
+
+      <div class="qbox">
+        <span class="qic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+        <p class="q" style="font-size:21px">¿Cuál es el efecto de los parámetros &ldquo;a&rdquo; y &ldquo;b&rdquo; en la recta?</p>
+      </div>
+    </div>
+
+    <div class="col" style="width:478px;flex:none">
+      <div class="ggb-card card noclick">
+        <div class="ggb-head">
+          <span class="chip navy" style="padding:5px 12px;font-size:11.5px">GeoGebra</span>
+          <span style="font-size:12.5px;color:var(--muted);font-weight:700">Vista Gráfica — así se ve tu pantalla</span>
+        </div>
+        <div class="ggb-eq" id="ggbEq">ec1: <var>x</var> + <var>y</var> = 2</div>
+        <div class="sl-row"><span class="sl-lab">a</span><input type="range" id="sA" min="-10" max="10" step="1" value="1" aria-label="Deslizador a"><span class="sl-val" id="vA">a = 1</span></div>
+        <div class="sl-row"><span class="sl-lab">b</span><input type="range" id="sB" min="-10" max="10" step="1" value="1" aria-label="Deslizador b"><span class="sl-val" id="vB">b = 1</span></div>
+        <div class="sl-row"><span class="sl-lab">c</span><input type="range" id="sC" min="-10" max="10" step="1" value="2" aria-label="Deslizador c"><span class="sl-val" id="vC">c = 2</span></div>
+        <svg viewBox="0 0 340 320" width="300" height="282" role="img" aria-label="Plano cartesiano con la recta ec1 y sus interceptos, controlada por los deslizadores">
+          <defs><clipPath id="ggbClip"><rect x="8" y="4" width="326" height="312"/></clipPath></defs>
+          <path class="grid-l" d="M14 4V316M40 4V316M66 4V316M92 4V316M118 4V316M144 4V316M196 4V316M222 4V316M248 4V316M274 4V316M300 4V316M326 4V316M8 316H334M8 290H334M8 264H334M8 238H334M8 212H334M8 186H334M8 134H334M8 108H334M8 82H334M8 56H334M8 30H334M8 4H334"/>
+          <line class="axis" x1="6" y1="160" x2="336" y2="160"/>
+          <path class="axis" d="M328 155l9 5-9 5"/>
+          <line class="axis" x1="170" y1="314" x2="170" y2="6"/>
+          <path class="axis" d="M165 14l5-9 5 9"/>
+          <text class="axname" x="332" y="150">x</text>
+          <text class="axname" x="183" y="14">y</text>
+          <text class="tick" x="162" y="176" text-anchor="end">0</text>
+          <text class="tick" x="14" y="176" text-anchor="middle">−6</text>
+          <text class="tick" x="66" y="176" text-anchor="middle">−4</text>
+          <text class="tick" x="118" y="176" text-anchor="middle">−2</text>
+          <text class="tick" x="222" y="176" text-anchor="middle">2</text>
+          <text class="tick" x="274" y="176" text-anchor="middle">4</text>
+          <text class="tick" x="326" y="176" text-anchor="middle">6</text>
+          <text class="tick" x="162" y="320" text-anchor="end">−6</text>
+          <text class="tick" x="162" y="268" text-anchor="end">−4</text>
+          <text class="tick" x="162" y="216" text-anchor="end">−2</text>
+          <text class="tick" x="162" y="112" text-anchor="end">2</text>
+          <text class="tick" x="162" y="60" text-anchor="end">4</text>
+          <text class="tick" x="162" y="10" text-anchor="end">6</text>
+          <line id="ggbLine" class="demo-line" clip-path="url(#ggbClip)" x1="-4" y1="-66" x2="344" y2="282"/>
+          <circle id="ggbDx" class="demo-dot" cx="222" cy="160" r="4"/>
+          <circle id="ggbDy" class="demo-dot" cx="170" cy="108" r="4"/>
+        </svg>
+        <div class="ggb-out"><b>Pendiente(ec1)</b><span class="val-m" id="ggbM">m = −1</span></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="s-foot">
+    <span>Unidad 2 · Matemática · I° Medio</span>
+    <span class="r"><span>Ecuaciones lineales de dos incógnitas</span><span class="hint"><span class="hintdot"></span>Mueve los deslizadores del panel</span></span>
+  </footer>
+</section>
+<!-- ============ DIAPOSITIVA 5 · EXPLORACIÓN DINÁMICA · PARTE 1 ============ -->
+<section class="slide">
+  <header class="s-head">
+    <span class="chip">Clase 6</span>
+    <h2 class="s-title">Exploración Dinámica · Parte 1</h2>
+    <span class="chip ghost push"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2.6"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2.6"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="7" cy="18" r="2.6"/></svg>En GeoGebra</span>
+  </header>
+
+  <div style="display:flex;flex-direction:column;gap:16px;flex:1;margin-top:18px;min-height:0">
+    <div class="task card reveal" style="padding:18px 24px;margin-top:0">
+      <div class="badge">A</div>
+      <div class="t-body" style="display:block;flex:1">
+        Muevan <b>solo el deslizador <span class="math"><var>a</var></span></b> (dejando <span class="math"><var>b</var></span> quieto). Luego muevan <b>solo el deslizador <span class="math"><var>b</var></span></b> (dejando <span class="math"><var>a</var></span> quieto).
+        <div class="qbox" style="margin-top:12px">
+          <span class="qic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+          <p class="q" style="font-size:22px">¿Qué le sucede <em>visualmente</em> a la recta en cada caso?</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="task card reveal" style="padding:18px 24px;margin-top:0;flex:1">
+      <div class="badge">B</div>
+      <div class="t-body" style="display:block;flex:1">
+        <b>Descubriendo la fórmula matemática:</b>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+          <div><b style="color:var(--navy)">1.</b> Fijen <span class="math"><var>a</var> = 9</span> y <span class="math"><var>b</var> = 3</span>. ¿Qué valor tiene la pendiente <span class="math"><var>m</var></span> en la pantalla? <span class="blank"></span></div>
+          <div><b style="color:var(--navy)">2.</b> Fijen <span class="math"><var>a</var> = −6</span> y <span class="math"><var>b</var> = 2</span>. ¿Qué valor tiene la pendiente <span class="math"><var>m</var></span> en la pantalla? <span class="blank"></span></div>
+        </div>
+        <div class="qbox" style="margin-top:12px">
+          <span class="qic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.4 1 2.3h6c0-.9.4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg></span>
+          <p class="q" style="font-size:22px">Mirando esos números, ¿qué <em>operación matemática</em> se debe hacer entre <span class="math"><var>a</var></span> y <span class="math"><var>b</var></span> para obtener <em>siempre</em> el valor exacto de la pendiente?</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="s-foot">
+    <span>Unidad 2 · Matemática · I° Medio</span>
+    <span class="r"><span>Ecuaciones lineales de dos incógnitas</span><span class="hint"><span class="hintdot"></span>Anota tus hallazgos en tu cuaderno</span></span>
+  </footer>
+</section>
+
+<!-- ============ DIAPOSITIVA 6 · EXPLORACIÓN DINÁMICA · PARTE 2 ============ -->
+<section class="slide">
+  <header class="s-head">
+    <span class="chip">Clase 6</span>
+    <h2 class="s-title">Exploración Dinámica · Parte 2</h2>
+    <span class="chip ghost push"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>En GeoGebra</span>
+  </header>
+
+  <div style="display:flex;flex-direction:column;gap:16px;flex:1;margin-top:18px;min-height:0">
+    <div class="task card reveal" style="padding:18px 24px;margin-top:0;flex:1">
+      <div class="badge">C</div>
+      <div class="t-body" style="display:block;flex:1">
+        Creen un <b>cuarto deslizador</b> llamado <b><span class="math"><var>d</var></span></b> y grafiquen una segunda ecuación: <span class="kbd">a x + b y = d</span>
+        <div class="qbox" style="margin-top:12px">
+          <span class="qic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+          <p class="q" style="font-size:22px">¿Qué <em>relación</em> tiene esta nueva recta respecto a la primera? ¿Qué <em>comparten</em>?</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="task card reveal" style="padding:18px 24px;margin-top:0;flex:1">
+      <div class="badge">D</div>
+      <div class="t-body" style="display:block;flex:1">
+        Muevan los deslizadores para que <b><span class="math"><var>a</var> = 0</span></b>. Luego prueben con <b><span class="math"><var>b</var> = 0</span></b>.
+        <div class="qbox" style="margin-top:12px">
+          <span class="qic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+          <p class="q" style="font-size:22px">¿Qué le pasa a la <em>gráfica</em> y qué le pasa al <em>valor de la pendiente</em> en GeoGebra en cada caso?</p>
+        </div>
+        <div style="margin-top:10px;font-size:17.5px;font-weight:700;color:var(--orange-deep)">(Recuerda tu fórmula de la pregunta B)</div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="s-foot">
+    <span>Unidad 2 · Matemática · I° Medio</span>
+    <span class="r"><span>Ecuaciones lineales de dos incógnitas</span><span class="hint"><span class="hintdot"></span>Anota tus hallazgos en tu cuaderno</span></span>
+  </footer>
+</section>
+
+<!-- ============ DIAPOSITIVA 7 · DESCUBRIENDO LA PENDIENTE (SÍNTESIS) ============ -->
+<section class="slide">
+  <header class="s-head">
+    <span class="chip">Clase 6</span>
+    <h2 class="s-title">Descubriendo la Pendiente</h2>
+    <span class="chip soft push">Síntesis</span>
+  </header>
+
+  <div class="cols" style="margin-top:14px">
+    <div class="col" style="flex:1">
+      <div class="oa card" style="margin-top:0">
+        <div class="oa-bar"></div>
+        <div class="oa-in" style="padding:18px 26px">
+          <div class="oa-k">La conclusión de la exploración</div>
+          <p class="oa-t" style="font-size:20px">Para cualquier recta <span class="math"><var>a</var><var>x</var> + <var>b</var><var>y</var> = <var>c</var></span>, la pendiente es:</p>
+          <div class="frm" style="margin-top:8px">
+            <span style="font-size:38px;font-weight:700;font-family:Georgia,serif;font-style:italic">m</span>
+            <span style="font-size:34px">=</span>
+            <span style="font-size:44px;font-weight:700">−</span>
+            <span class="frac" style="font-size:34px;font-weight:700;color:var(--navy)"><span class="num"><span class="fv" style="font-size:34px">a</span></span><span class="den"><span class="fv" style="font-size:34px">b</span></span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="inter-card card">
+        <div class="inter-k"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2.6"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2.6"/></svg>Así influyen en la inclinación <span style="text-transform:none;letter-spacing:0;color:var(--muted);font-weight:600">(dejando el otro fijo)</span></div>
+        <div class="inf">
+          <div class="inf-row"><b>a</b>&nbsp;más grande <span class="arr">→</span><span>la recta se inclina más (se acerca a la vertical).</span></div>
+          <div class="inf-row"><b>b</b>&nbsp;más grande <span class="arr">→</span><span>la recta se tiende (se acerca a la horizontal).</span></div>
+        </div>
+      </div>
+
+      <div class="qbox reveal">
+        <span class="qic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.4 1 2.3h6c0-.9.4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg></span>
+        <p class="q" style="font-size:19.5px">¿Y el parámetro <em><span class="math">c</span></em>? No aparece en <em><span class="math">m</span></em>: no inclina la recta, solo la desplaza sin girarla (lo exploramos en la Clase 3).</p>
+      </div>
+    </div>
+
+    <div class="col" style="width:462px;flex:none">
+      <div class="plane-card card noclick">
+        <div class="plane-head">
+          <button type="button" class="pchip on" id="pc0">4x + 2y = 8</button>
+          <button type="button" class="pchip" id="pc1">−x + 3y = 6</button>
+        </div>
+        <svg viewBox="0 0 440 440" width="410" height="410" role="img" aria-label="Plano cartesiano con dos ejemplos de rectas, su triángulo de pendiente y el valor de m">
+          <defs><clipPath id="demoClip"><rect x="12" y="10" width="420" height="426"/></clipPath></defs>
+          <path class="grid-l" d="M30 12V432M68 12V432M106 12V432M144 12V432M182 12V432M258 12V432M296 12V432M334 12V432M372 12V432M410 12V432M12 412H428M12 374H428M12 336H428M12 298H428M12 260H428M12 184H428M12 146H428M12 108H428M12 70H428M12 32H428"/>
+          <line class="axis" x1="6" y1="222" x2="434" y2="222"/>
+          <path class="axis" d="M426 217l9 5-9 5"/>
+          <line class="axis" x1="220" y1="436" x2="220" y2="6"/>
+          <path class="axis" d="M215 14l5-9 5 9"/>
+          <text class="axname" x="430" y="242">x</text>
+          <text class="axname" x="233" y="14">y</text>
+          <text class="tick" x="208" y="240" text-anchor="end">0</text>
+          <text class="tick" x="30" y="240" text-anchor="middle">−5</text>
+          <text class="tick" x="68" y="240" text-anchor="middle">−4</text>
+          <text class="tick" x="106" y="240" text-anchor="middle">−3</text>
+          <text class="tick" x="144" y="240" text-anchor="middle">−2</text>
+          <text class="tick" x="182" y="240" text-anchor="middle">−1</text>
+          <text class="tick" x="258" y="240" text-anchor="middle">1</text>
+          <text class="tick" x="296" y="240" text-anchor="middle">2</text>
+          <text class="tick" x="334" y="240" text-anchor="middle">3</text>
+          <text class="tick" x="372" y="240" text-anchor="middle">4</text>
+          <text class="tick" x="410" y="240" text-anchor="middle">5</text>
+          <text class="tick" x="208" y="416" text-anchor="end">−5</text>
+          <text class="tick" x="208" y="378" text-anchor="end">−4</text>
+          <text class="tick" x="208" y="340" text-anchor="end">−3</text>
+          <text class="tick" x="208" y="302" text-anchor="end">−2</text>
+          <text class="tick" x="208" y="264" text-anchor="end">−1</text>
+          <text class="tick" x="208" y="188" text-anchor="end">1</text>
+          <text class="tick" x="208" y="150" text-anchor="end">2</text>
+          <text class="tick" x="208" y="112" text-anchor="end">3</text>
+          <text class="tick" x="208" y="74" text-anchor="end">4</text>
+          <text class="tick" x="208" y="36" text-anchor="end">5</text>
+          <line id="demoLine" class="demo-line" clip-path="url(#demoClip)" x1="-31" y1="-432" x2="471" y2="572"/>
+          <polygon id="demoTri" class="tri" points="220,70 258,70 258,146"/>
+          <path id="demoRa" class="ra" d="M250 70 v8 h8"/>
+          <circle id="dd1" class="demo-dot" cx="220" cy="70" r="5"/>
+          <circle id="dd2" class="demo-dot" cx="258" cy="146" r="5"/>
+          <circle id="dd3" class="demo-dot" cx="296" cy="222" r="5"/>
+          <text id="demoDxLab" class="tri-lab" x="239" y="57" text-anchor="middle">Δx = 1</text>
+          <text id="demoDyLab" class="tri-lab" x="266" y="105" text-anchor="start">Δy = −2</text>
+        </svg>
+        <div class="demo-out"><b>Pendiente(ec1)</b><span class="val-m" id="demoM">m = −a/b = −4/2 = −2</span></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="s-foot">
+    <span>Unidad 2 · Matemática · I° Medio</span>
+    <span class="r"><span>Ecuaciones lineales de dos incógnitas</span><span class="hint"><span class="hintdot"></span>Pulsa los ejemplos del plano</span></span>
+  </footer>
+</section>
+
+<!-- ============ DIAPOSITIVA 8 · CIERRE · TICKET DE SALIDA ============ -->
+<section class="slide">
+  <header class="s-head">
+    <span class="chip">Clase 6</span>
+    <h2 class="s-title">Cierre de la Clase</h2>
+    <span class="chip soft push">Cierre</span>
+  </header>
+
+  <div class="oa card" style="margin-top:14px">
+    <div class="oa-bar"></div>
+    <div class="oa-in" style="padding:14px 30px">
+      <p class="oa-t" style="font-size:23px;line-height:1.5">En la recta <span class="math"><var>a</var><var>x</var> + <var>b</var><var>y</var> = <var>c</var></span> la pendiente es <b style="white-space:nowrap"><span class="math"><var>m</var></span> = <span style="font-size:30px">−</span><span class="frac" style="font-size:24px;font-weight:700;color:var(--navy)"><span class="num"><span class="fv" style="font-size:24px">a</span></span><span class="den"><span class="fv" style="font-size:24px">b</span></span></span></b>: el <b>signo</b> de <span class="math"><var>a</var></span> y <span class="math"><var>b</var></span> decide si la recta <b>sube o baja</b>.</p>
+    </div>
+  </div>
+
+  <div class="inst" style="margin-top:14px;padding:16px 24px;align-items:flex-start">
+    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+    <span style="font-size:20px;line-height:1.55"><b>Ticket de salida:</b> pon <b>nombre y apellido</b> a la hoja que te entregará el profesor. Escribe un <b>mensaje a tu compañero o compañera que estuvo ausente hoy</b>: explícale qué efecto tienen los parámetros <b>a</b> y <b>b</b> sobre la gráfica de la recta y sobre su pendiente <b><span class="math"><var>m</var> = −<var>a</var>/<var>b</var></span></b>. <b>Recuerda mencionar el signo de la pendiente</b> y cómo afecta a su inclinación.</span>
+  </div>
+
+  <div class="sign-grid">
+    <div class="sgn card reveal">
+      <span class="schip">a &gt; 0 &nbsp;y&nbsp; b &gt; 0</span>
+      <div class="srow">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#16305A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 7 10 14 14 10 21 17"/><polyline points="15 17 21 17 21 11"/></svg>
+        <span class="sm neg">m &lt; 0</span>
+      </div>
+      <p>La pendiente es <b>negativa</b>: la recta es <b>decreciente</b>, baja de izquierda a derecha.</p>
+      <span class="sex">Ejemplo: 4x + 2y = 8 → m = −2</span>
+    </div>
+    <div class="sgn card reveal">
+      <span class="schip">signos contrarios (uno de los dos negativo)</span>
+      <div class="srow">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#15803D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 17 10 10 14 14 21 7"/><polyline points="15 7 21 7 21 13"/></svg>
+        <span class="sm pos">m &gt; 0</span>
+      </div>
+      <p>La pendiente es <b>positiva</b>: la recta es <b>creciente</b>, sube de izquierda a derecha.</p>
+      <span class="sex">Ejemplo: −x + 3y = 6 → m = 1/3</span>
+    </div>
+    <div class="sgn card reveal">
+      <span class="schip">a &lt; 0 &nbsp;y&nbsp; b &lt; 0</span>
+      <div class="srow">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#16305A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 7 10 14 14 10 21 17"/><polyline points="15 17 21 17 21 11"/></svg>
+        <span class="sm neg">m &lt; 0</span>
+      </div>
+      <p>Con los dos negativos, <span class="math">m</span> vuelve a ser <b>negativa</b>: la recta es <b>decreciente</b>.</p>
+      <span class="sex">Ejemplo: −2x − 3y = 6 → m = −2/3</span>
+    </div>
+  </div>
+
+  <footer class="s-foot">
+    <span>Unidad 2 · Matemática · I° Medio</span>
+    <span class="r"><span>Ecuaciones lineales de dos incógnitas</span><span class="hint"><span class="hintdot"></span>Clic para avanzar</span></span>
+  </footer>
+</section>
+</div>
+</div>
+</div>
+
+<div id="hud">
+  <button id="bPrev" aria-label="Diapositiva anterior" title="Anterior (←)"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="14 6 8 12 14 18"/></svg></button>
+  <span class="cnt" id="counter">1 / 8</span>
+  <button id="bNext" aria-label="Diapositiva siguiente" title="Siguiente (→)"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="10 6 16 12 10 18"/></svg></button>
+  <button id="bZoomOut" aria-label="Alejar" title="Alejar (−)"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+  <span class="cnt" id="zoomLbl" title="Clic para restablecer el zoom">100%</span>
+  <button id="bZoomIn" aria-label="Acercar" title="Acercar (+)"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+  <button id="bFull" aria-label="Pantalla completa" title="Pantalla completa (F)"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+</div>
+
+<script>
+(function(){
+  var stage = document.getElementById('stage');
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var counter = document.getElementById('counter');
+  var bar = document.getElementById('progress');
+  var cur = 0;
+
+  var wrap = document.getElementById('wrap');
+  var ZKEY = 'clase6_zoom';
+  var userZoom = 1;
+  try { userZoom = Math.min(2, Math.max(1, parseFloat(localStorage.getItem(ZKEY)) || 1)); } catch(e) {}
+
+  function fit(){
+    var s = Math.min(window.innerWidth / 1310, window.innerHeight / 775) * userZoom;
+    wrap.style.width = (1280 * s) + 'px';
+    wrap.style.height = (720 * s) + 'px';
+    stage.style.transform = 'scale(' + s + ')';
+  }
+
+  var zoomLbl = document.getElementById('zoomLbl');
+  function setZoom(z){
+    userZoom = Math.min(2, Math.max(1, Math.round(z * 10) / 10));
+    try { localStorage.setItem(ZKEY, userZoom); } catch(e) {}
+    zoomLbl.textContent = Math.round(userZoom * 100) + '%';
+    fit();
+  }
+
+  function toggleFS(){
+    try {
+      var d = document, el = d.documentElement;
+      if (d.fullscreenElement) { d.exitFullscreen(); }
+      else if (el.requestFullscreen) { el.requestFullscreen(); }
+      else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+    } catch(e) {}
+  }
+  document.getElementById('bFull').addEventListener('click', toggleFS);
+  document.addEventListener('fullscreenchange', function(){
+    document.getElementById('bFull').classList.toggle('on', !!document.fullscreenElement);
+  });
+  document.getElementById('bZoomIn').addEventListener('click', function(){ setZoom(userZoom + 0.1); });
+  document.getElementById('bZoomOut').addEventListener('click', function(){ setZoom(userZoom - 0.1); });
+  zoomLbl.addEventListener('click', function(){ setZoom(1); });
+
+  window.addEventListener('resize', fit); setZoom(userZoom);
+
+  function show(i){
+    i = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function(s, k){
+      s.classList.toggle('active', k === i);
+      s.classList.toggle('before', k < i);
+    });
+    cur = i;
+    counter.textContent = (i + 1) + ' / ' + slides.length;
+    bar.style.width = ((i + 1) / slides.length * 100) + '%';
+  }
+  function next(){
+    var r = slides[cur].querySelector('.reveal:not(.shown):not(.noclick)');
+    if (r){ r.classList.add('shown'); return; }
+    show(cur + 1);
+  }
+  function prev(){
+    var rs = slides[cur].querySelectorAll('.reveal.shown:not(.noclick)');
+    if (rs.length){ rs[rs.length - 1].classList.remove('shown'); return; }
+    show(cur - 1);
+  }
+
+  document.getElementById('bNext').addEventListener('click', next);
+  document.getElementById('bPrev').addEventListener('click', prev);
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); next(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp'){ e.preventDefault(); prev(); }
+    else if (e.key === '+' || e.key === '='){ setZoom(userZoom + 0.1); }
+    else if (e.key === '-' || e.key === '_'){ setZoom(userZoom - 0.1); }
+    else if (e.key === '0'){ setZoom(1); }
+    else if (e.key === 'f' || e.key === 'F'){ toggleFS(); }
+    else if (e.key === 'Home'){ show(0); }
+    else if (e.key === 'End'){ show(slides.length - 1); }
+  });
+
+  stage.addEventListener('click', function(e){
+    if (e.target.closest('button, input, .opt-pt, .noclick')) return;
+    next();
+  });
+
+  show(0);
+
+  /* ---- Panel GeoGebra simulado (lámina 4) ---- */
+  var MINUS = '−';
+  function fmt(n){ return String(n).replace(/-/g, MINUS); }
+  function gcd(x, y){ x = Math.abs(x); y = Math.abs(y); while (y){ var t = x % y; x = y; y = t; } return x || 1; }
+  function body(c, v){ var n = Math.abs(c); return n === 1 ? v : '' + n + v; }
+
+  var sA = document.getElementById('sA'), sB = document.getElementById('sB'), sC = document.getElementById('sC');
+  var vA = document.getElementById('vA'), vB = document.getElementById('vB'), vC = document.getElementById('vC');
+  var ggbEq = document.getElementById('ggbEq'), ggbLine = document.getElementById('ggbLine');
+  var ggbDx = document.getElementById('ggbDx'), ggbDy = document.getElementById('ggbDy');
+  var ggbM = document.getElementById('ggbM');
+
+  function updateGgb(){
+    var a = +sA.value, b = +sB.value, c = +sC.value;
+    vA.textContent = 'a = ' + fmt(a);
+    vB.textContent = 'b = ' + fmt(b);
+    vC.textContent = 'c = ' + fmt(c);
+    var s = '';
+    if (a) s = (a < 0 ? MINUS : '') + body(a, '<var>x</var>');
+    if (b){
+      if (s) s += (b < 0 ? ' ' + MINUS + ' ' : ' + ');
+      else if (b < 0) s += MINUS;
+      s += body(b, '<var>y</var>');
+    }
+    if (!s) s = '0';
+    ggbEq.innerHTML = 'ec1: ' + s + ' = ' + fmt(c);
+
+    var L = ggbLine;
+    if (b !== 0){
+      var x1 = -6.7, x2 = 6.7, y1 = (c - a * x1) / b, y2 = (c - a * x2) / b;
+      L.setAttribute('x1', 170 + 26 * x1); L.setAttribute('y1', 160 - 26 * y1);
+      L.setAttribute('x2', 170 + 26 * x2); L.setAttribute('y2', 160 - 26 * y2);
+      L.style.display = '';
+    } else if (a !== 0){
+      var X = 170 + 26 * (c / a);
+      L.setAttribute('x1', X); L.setAttribute('y1', 332);
+      L.setAttribute('x2', X); L.setAttribute('y2', -12);
+      L.style.display = '';
+    } else {
+      L.style.display = 'none';
+    }
+    if (a !== 0){ ggbDx.setAttribute('cx', 170 + 26 * (c / a)); ggbDx.setAttribute('cy', 160); ggbDx.style.display = ''; }
+    else ggbDx.style.display = 'none';
+    if (b !== 0){ ggbDy.setAttribute('cx', 170); ggbDy.setAttribute('cy', 160 - 26 * (c / b)); ggbDy.style.display = ''; }
+    else ggbDy.style.display = 'none';
+
+    var out;
+    if (b !== 0){
+      var num = -a, den = b, g = gcd(num, den);
+      num /= g; den /= g;
+      if (den < 0){ num = -num; den = -den; }
+      var val = (den === 1) ? fmt(num) : fmt(num) + '/' + den + ' ≈ ' + (-a / b).toFixed(2).replace('.', ',').replace(/-/g, MINUS);
+      if (a === 0) val = '0 · recta horizontal';
+      out = 'm = ' + val;
+    } else if (a !== 0){
+      out = 'indefinida · recta vertical';
+    } else {
+      out = 'no hay recta (0 = ' + fmt(c) + ')';
+    }
+    ggbM.textContent = out;
+  }
+  Array.prototype.forEach.call([sA, sB, sC], function(sl){ sl.addEventListener('input', updateGgb); });
+  updateGgb();
+
+  /* ---- Plano demostrativo (lámina 5) ---- */
+  var U = 38, OX = 220, OY = 222;
+  function px(p){ return [OX + U * p[0], OY - U * p[1]]; }
+  var P = [
+    { eq: '4x + 2y = 8', m: '−4/2 = −2',
+      line: [[-6.6, 17.2], [6.6, -9.2]],
+      tri: [[0, 4], [1, 4], [1, 2]], ra: 'M250 70 v8 h8',
+      dxl: { t: 'Δx = 1', p: [0.5, 4.3], a: 'middle' },
+      dyl: { t: 'Δy = −2', p: [1.22, 3.1], a: 'start' },
+      dots: [[0, 4], [1, 2], [2, 0]] },
+    { eq: '−x + 3y = 6', m: '−(−1)/3 = 1/3 ≈ 0,33',
+      line: [[-6.6, -0.2], [6.6, 4.2]],
+      tri: [[0, 2], [3, 2], [3, 3]], ra: 'M326 146 v-8 h8',
+      dxl: { t: 'Δx = 3', p: [1.5, 2.3], a: 'middle' },
+      dyl: { t: 'Δy = 1', p: [3.25, 2.65], a: 'start' },
+      dots: [[0, 2], [-3, 1], [3, 3]] }
+  ];
+  var demoLine = document.getElementById('demoLine');
+  var demoTri = document.getElementById('demoTri');
+  var demoRa = document.getElementById('demoRa');
+  var dDx = document.getElementById('demoDxLab'), dDy = document.getElementById('demoDyLab');
+  var dots = [document.getElementById('dd1'), document.getElementById('dd2'), document.getElementById('dd3')];
+  var demoM = document.getElementById('demoM');
+  var pc0 = document.getElementById('pc0'), pc1 = document.getElementById('pc1');
+
+  function setPreset(i){
+    var p = P[i];
+    var A = px(p.line[0]), B = px(p.line[1]);
+    demoLine.setAttribute('x1', A[0]); demoLine.setAttribute('y1', A[1]);
+    demoLine.setAttribute('x2', B[0]); demoLine.setAttribute('y2', B[1]);
+    demoTri.setAttribute('points', p.tri.map(function(q){ var r = px(q); return r[0] + ',' + r[1]; }).join(' '));
+    demoRa.setAttribute('d', p.ra);
+    var lp = px(p.dxl.p);
+    dDx.setAttribute('x', lp[0]); dDx.setAttribute('y', lp[1]);
+    dDx.setAttribute('text-anchor', p.dxl.a); dDx.textContent = p.dxl.t;
+    var lp2 = px(p.dyl.p);
+    dDy.setAttribute('x', lp2[0]); dDy.setAttribute('y', lp2[1]);
+    dDy.setAttribute('text-anchor', p.dyl.a); dDy.textContent = p.dyl.t;
+    p.dots.forEach(function(d, k){ var q = px(d); dots[k].setAttribute('cx', q[0]); dots[k].setAttribute('cy', q[1]); });
+    demoM.textContent = 'm = ' + MINUS + 'a/b = ' + p.m;
+    pc0.classList.toggle('on', i === 0);
+    pc1.classList.toggle('on', i === 1);
+  }
+  pc0.addEventListener('click', function(){ setPreset(0); });
+  pc1.addEventListener('click', function(){ setPreset(1); });
+  setPreset(0);
+})();
+</script>
+</body>
+</html>
